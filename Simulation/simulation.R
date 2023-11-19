@@ -24,6 +24,7 @@ truth <- c(treated(time_gap * 1) - control(time_gap * 1),
             treated(time_gap * 2) - control(time_gap * 2), 
             treated(time_gap * 3) - control(time_gap * 3))
 
+truth <- -truth
 truth
 
 true_b(para_set)
@@ -68,21 +69,15 @@ b_est <- c()
 t_est <- c()
 for(rep in 1:rep_num) {
   df <- data_gen(N, para_set)
-  sorted_time <- with(df, sort(unique(T0[Delta == 1])))
+  sorted_time <- with(df, sort(unique(T0)))
   K = length(sorted_time)
   censor_sorted_time <- with(df, sort(unique(T0[Delta == 0])))
   censor_cumhaz_sub <- with(df, censor_cumhaz_est(censor_sorted_time, T0, Delta))
-  censor_cumhaz <- colSums(censor_cumhaz_sub)
-  censor_cumhaz_IF <- t(t(censor_cumhaz_sub) - censor_cumhaz)
+  censor_cumhaz <- rowSums(censor_cumhaz_sub)
+  censor_cumhaz_IF <- censor_cumhaz_sub - censor_cumhaz / N
   noncensor_cumhaz <- noncensor_cumhaz_compute(sorted_time, censor_sorted_time, censor_cumhaz)
   noncensor_cumhaz_IF <- noncensor_cumhaz_IF_compute(sorted_time, censor_sorted_time, censor_cumhaz_IF)
   
-
-  source("simu_POR.R")
-  POR_est_result <- rbind(POR_est_result, POR_est)
-  POR_sd_result <- rbind(POR_sd_result, POR_sd_est)
-  POR_covering <- rbind(POR_covering, truth <= POR_est + 1.96 * POR_sd_est & truth >= POR_est - 1.96 * POR_sd_est)
-  b_est <- rbind(b_est, b)
 
   source("simu_PIPW.R")
   PIPW_est_result <- rbind(PIPW_est_result, PIPW_est)
@@ -95,13 +90,6 @@ for(rep in 1:rep_num) {
   PDR_sd_result <- rbind(PDR_sd_result, PDR_sd_est)
   PDR_covering <- rbind(PDR_covering, truth <= PDR_est + 1.96 * PDR_sd_est &
                           truth >= PDR_est - 1.96 * PDR_sd_est)
-
-
-  source("simu_POR_WOR.R")
-  POR_WOR_est_result <- rbind(POR_WOR_est_result, POR_WOR_est)
-  POR_WOR_sd_result <- rbind(POR_WOR_sd_result, POR_WOR_sd_est)
-  POR_WOR_covering <- rbind(POR_WOR_covering, truth <= POR_WOR_est + 1.96 * POR_WOR_sd_est &
-                              truth >= POR_WOR_est - 1.96 * POR_WOR_sd_est)
 
 
   source("simu_PDR_WOR.R")
@@ -141,16 +129,33 @@ for(rep in 1:rep_num) {
   print(rep)
 }
 
-apply(POR_est_result, 2, mean) - truth
-apply(POR_est_result, 2, sd)
-apply(POR_sd_result, 2, mean)
-apply(POR_covering, 2, mean)
-true_b(para_set)
-colMeans(b_est)
+
 apply(PIPW_est_result, 2, mean) - truth
 apply(PIPW_est_result, 2, sd)
 apply(PIPW_sd_result, 2, mean)
 apply(PIPW_covering, 2, mean)
-true_t(para_set)
-colMeans(t_est)
+apply(PDR_est_result, 2, mean) - truth
+apply(PDR_est_result, 2, sd)
+apply(PDR_sd_result, 2, mean)
+apply(PDR_covering, 2, mean)
+apply(PDR_WOR_est_result, 2, mean) - truth
+apply(PDR_WOR_est_result, 2, sd)
+apply(PDR_WOR_sd_result, 2, mean)
+apply(PDR_WOR_covering, 2, mean)
+apply(PIPW_WIPW_est_result, 2, mean) - truth
+apply(PIPW_WIPW_est_result, 2, sd)
+apply(PIPW_WIPW_sd_result, 2, mean)
+apply(PIPW_WIPW_covering, 2, mean)
+apply(PDR_WIPW_est_result, 2, mean) - truth
+apply(PDR_WIPW_est_result, 2, sd)
+apply(PDR_WIPW_sd_result, 2, mean)
+apply(PDR_WIPW_covering, 2, mean)
+apply(PDR_BW_est_result, 2, mean) - truth
+apply(PDR_BW_est_result, 2, sd)
+apply(PDR_BW_sd_result, 2, mean)
+apply(PDR_BW_covering, 2, mean)
+apply(DR_est_result, 2, mean) - truth
+apply(DR_est_result, 2, sd)
+apply(DR_sd_result, 2, mean)
+apply(DR_covering, 2, mean)
 
